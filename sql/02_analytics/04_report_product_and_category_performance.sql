@@ -1,5 +1,5 @@
 /* ============================================================
-   REPORT 3: PRODUCT & CATEGORY PERFORMANCE
+   REPORT 4: PRODUCT & CATEGORY PERFORMANCE
    ============================================================
 
    PURPOSE
