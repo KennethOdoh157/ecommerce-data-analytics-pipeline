@@ -1,5 +1,5 @@
 /* ============================================================
-   REPORT 2B: CUSTOMER RETENTION COHORT ANALYSIS
+   REPORT 03: CUSTOMER RETENTION COHORT ANALYSIS
    ============================================================
 
    PURPOSE
