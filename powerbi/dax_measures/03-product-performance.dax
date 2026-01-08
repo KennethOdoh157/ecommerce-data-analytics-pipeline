@@ -1,0 +1,71 @@
+------------------------------------------------------------
+-- Product Performance Metrics
+------------------------------------------------------------
+
+-- Revenue Top N with Others
+Revenue Top N =
+VAR TopNValue = SELECTEDVALUE('Top N Categories'[Top N Categories], 5)
+VAR RankCategory =
+    RANKX(
+        ALL(dim_product[product_category_name_en]),
+        [Total Revenue],
+        ,
+        DESC,
+        Dense
+    )
+RETURN
+IF(RankCategory <= TopNValue, [Total Revenue], BLANK())
+-- Shows top N products by revenue, others excluded
+
+-- Avg Freight Cost per Item
+Avg Freight Cost =
+DIVIDE([Total Freight Value], [Total Items Sold])
+-- Measures shipping cost efficiency per item
+
+-- Avg Item Price
+Avg Item Price =
+DIVIDE([Total Item Revenue], [Total Items Sold])
+-- Average price per item
+
+-- Avg Items per Order
+Avg Items per Order =
+DIVIDE([Total Items Sold], [Total Orders (items)])
+-- Average number of items sold per order
+
+-- Avg Product Volume (cm³)
+Avg Product Volume (cm³) =
+AVERAGEX(
+    dim_product,
+    dim_product[product_length_cm] * dim_product[product_width_cm] * dim_product[product_height_cm]
+)
+-- Average product volume in cubic centimeters
+
+-- Avg Product Weight (g)
+Avg Product Weight (g) =
+AVERAGE(dim_product[product_weight_g])
+-- Average product weight in grams
+
+-- Has Items
+Has Items =
+IF([Total Items Sold] > 0, 1, 0)
+-- Flags products with sales
+
+-- Has Revenue
+Has Revenue =
+IF([Total Revenue] > 0, 1, 0)
+-- Flags products with revenue
+
+-- Items Share %
+Items Share % =
+DIVIDE([Total Items Sold], CALCULATE([Total Items Sold], ALL(dim_product[product_category_name_en])))
+-- Proportion of items sold by category
+
+-- Revenue per KG
+Revenue per KG =
+DIVIDE([Total Revenue (I + F)], [Avg Product Weight (g)] / 1000)
+-- Revenue generated per kilogram of product
+
+-- Revenue Share %
+Revenue Share % =
+DIVIDE([Total Revenue (I + F)], CALCULATE([Total Revenue (I + F)], ALL(dim_product[product_category_name_en])))
+-- Revenue share by product category
