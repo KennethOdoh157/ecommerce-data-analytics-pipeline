@@ -1,0 +1,13 @@
+------------------------------------------------------------
+-- Time Intelligence Metrics
+------------------------------------------------------------
+
+-- Revenue Previous Month
+Revenue PM =
+CALCULATE([Total Revenue], DATEADD(dim_date[full_date], -1, MONTH))
+-- Revenue for previous month
+
+-- Revenue Month-over-Month %
+Revenue MoM % =
+DIVIDE([Total Revenue] - [Revenue PM], [Revenue PM])
+-- Percentage change in revenue compared to previous month
