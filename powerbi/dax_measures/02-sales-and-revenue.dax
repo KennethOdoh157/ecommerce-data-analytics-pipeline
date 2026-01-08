@@ -1,0 +1,51 @@
+------------------------------------------------------------
+-- Sales & Revenue Metrics
+------------------------------------------------------------
+
+-- Average Order Value (AOV)
+AOV =
+DIVIDE([Total Revenue], [Total Orders])
+-- Average revenue per order (purchase-date aligned)
+
+-- Payment Revenue
+Payment Revenue =
+CALCULATE(
+    SUM(fact_payments[payment_value]),
+    TREATAS(VALUES(fact_orders[order_id]), fact_payments[order_id])
+)
+-- Payment revenue aligned to order purchase date via order_id
+
+-- Revenue Contribution %
+Revenue Contribution % =
+DIVIDE([Total Revenue], CALCULATE([Total Revenue], ALLSELECTED()))
+-- Percentage contribution of revenue within current filter context
+
+-- Revenue Previous Month
+Revenue PM =
+CALCULATE([Total Revenue], DATEADD(dim_date[full_date], -1, MONTH))
+-- Revenue for the previous month using purchase date
+
+-- Revenue Month-over-Month %
+Revenue MoM % =
+DIVIDE([Total Revenue] - [Revenue PM], [Revenue PM])
+-- Percentage change in revenue compared to previous month
+
+-- Total Item Revenue
+Total Item Revenue =
+SUM(fact_order_items[price])
+-- Price only, excludes freight
+
+-- Total Revenue (Items + Freight)
+Total Revenue (I + F) =
+[Total Item Revenue] + [Total Freight Value]
+-- Revenue including items + freight
+
+-- Total Freight Value
+Total Freight Value =
+SUM(fact_order_items[freight_value])
+-- Total freight charges
+
+-- Avg Revenue per Order
+Avg Revenue per Order =
+DIVIDE([Total Revenue (I + F)], [Total Orders (items)])
+-- Average revenue per order including items and freight
