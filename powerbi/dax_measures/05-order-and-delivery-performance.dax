@@ -1,0 +1,77 @@
+------------------------------------------------------------
+-- Order & Delivery Performance Metrics
+------------------------------------------------------------
+
+-- Avg Delivery Days
+Avg Delivery Days =
+AVERAGE(fact_orders[delivery_days])
+-- Average number of days from purchase to delivery
+
+-- Avg Items per Order_d4
+Avg Items per Order_d4 =
+DIVIDE([Total Items Sold], [Total Orders], 0)
+-- Average items per order (order size efficiency)
+
+-- Avg Shipping Cost per Order
+Avg Shipping Cost per Order =
+DIVIDE([Total Shipping Cost], [Total Orders_d4], 0)
+-- Average freight cost per order
+
+-- Delivered Orders
+Delivered Orders =
+CALCULATE(
+    DISTINCTCOUNT(fact_orders[order_id]),
+    fact_orders[order_status] = "delivered"
+)
+-- Counts successfully delivered orders
+
+-- Canceled Orders
+Canceled Orders =
+CALCULATE(
+    DISTINCTCOUNT(fact_orders[order_id]),
+    fact_orders[order_status] = "canceled"
+)
+-- Counts orders that were canceled
+
+-- Late Orders
+Late Orders =
+CALCULATE(
+    COUNTROWS(fact_orders),
+    fact_orders[order_status] = "delivered",
+    fact_orders[delivered_customer_date_key] > fact_orders[estimated_delivery_date_key]
+)
+-- Counts delivered orders that arrived after the estimated delivery date
+
+-- On-Time Orders
+On-Time Orders =
+CALCULATE(
+    COUNTROWS(fact_orders),
+    fact_orders[order_status] = "delivered",
+    fact_orders[delivered_customer_date_key] <= fact_orders[estimated_delivery_date_key]
+)
+-- Counts delivered orders that met estimated delivery date
+
+-- On-Time Delivery Rate
+On-Time Delivery Rate =
+DIVIDE([On-Time Orders], [Delivered Orders], 0)
+-- Percentage of delivered orders on time
+
+-- Order Fulfillment Rate
+Order Fulfillment Rate =
+DIVIDE([Delivered Orders], [Total Orders], 0)
+-- Percentage of orders successfully delivered
+
+-- Total Items Sold_d4
+Total Items Sold_d4 =
+SUM(fact_order_items[item_count])
+-- Total items sold
+
+-- Total Orders_d4
+Total Orders_d4 =
+DISTINCTCOUNT(fact_orders[order_id])
+-- Total orders in selected context
+
+-- Total Shipping Cost
+Total Shipping Cost =
+SUM(fact_order_items[freight_value])
+-- Total freight/shipping cost
