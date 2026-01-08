@@ -1,0 +1,27 @@
+------------------------------------------------------------
+-- Core Metrics
+-- Measures used across multiple dashboards
+------------------------------------------------------------
+
+-- Total Orders
+Total Orders =
+DISTINCTCOUNT(fact_orders[order_id])
+-- Counts distinct orders using purchase_date_key (active relationship)
+
+-- Total Revenue
+Total Revenue =
+CALCULATE(
+    SUM(fact_order_items[price]) + SUM(fact_order_items[freight_value]),
+    TREATAS(VALUES(fact_orders[order_id]), fact_order_items[order_id])
+)
+-- Revenue from order items and freight aligned to order purchase date
+
+-- Total Customers
+Total Customers =
+DISTINCTCOUNT(dim_customer[customer_unique_id])
+-- Counts distinct customers who placed orders
+
+-- Total Sellers
+Total Sellers =
+DISTINCTCOUNT(dim_seller[seller_id])
+-- Counts unique sellers involved in fulfilled orders
