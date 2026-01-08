@@ -1,0 +1,79 @@
+------------------------------------------------------------
+-- Customer & Seller Behavior Metrics
+------------------------------------------------------------
+
+-- Avg Orders per Customer
+Avg Orders per Customer =
+AVERAGEX(
+    VALUES(dim_customer[customer_unique_id]),
+    CALCULATE(DISTINCTCOUNT(fact_orders[order_id]))
+)
+-- Average number of orders per customer
+
+-- One-Time Customers
+One-Time Customers =
+COUNTROWS(
+    FILTER(
+        VALUES(dim_customer[customer_unique_id]),
+        CALCULATE(DISTINCTCOUNT(fact_orders[order_id])) = 1
+    )
+)
+-- Counts customers with exactly one order
+
+-- Repeat Customers
+Repeat Customers =
+COUNTROWS(
+    FILTER(
+        VALUES(dim_customer[customer_unique_id]),
+        CALCULATE(DISTINCTCOUNT(fact_orders[order_id])) > 1
+    )
+)
+-- Counts customers with more than one order
+
+-- Order Frequency Group
+Order Frequency Group =
+VAR OrderCnt = CALCULATE(DISTINCTCOUNT(fact_orders[order_id]))
+RETURN
+SWITCH(
+    TRUE(),
+    OrderCnt = 1, "1 Order",
+    OrderCnt <= 3, "2–3 Orders",
+    OrderCnt <= 5, "4–5 Orders",
+    "6+ Orders"
+)
+-- Segments customers based on number of orders
+
+-- Repeat Customer Rate
+Repeat Customer Rate =
+DIVIDE([Repeat Customers], [Total Customers])
+-- Percentage of customers who are repeat buyers
+
+-- Revenue by Geography
+Revenue by Geography =
+[Total Revenue]
+-- Revenue within current geographic filter context
+
+-- Revenue per Customer
+Revenue per Customer =
+DIVIDE([Total Revenue_d3], [Total Customers_d3])
+-- Average revenue per customer
+
+-- Total Customers_d3
+Total Customers_d3 =
+DISTINCTCOUNT(dim_customer[customer_unique_id])
+-- Total unique customers in current context
+
+-- Total Orders_d3
+Total Orders_d3 =
+DISTINCTCOUNT(fact_orders[order_id])
+-- Total distinct orders
+
+-- Total Revenue_d3
+Total Revenue_d3 =
+SUM(fact_payments[payment_value])
+-- Revenue from payments
+
+-- Total Sellers_
+Total Sellers_ =
+CALCULATE(DISTINCTCOUNT(fact_order_items[seller_key]))
+-- Counts sellers active in the selected period
