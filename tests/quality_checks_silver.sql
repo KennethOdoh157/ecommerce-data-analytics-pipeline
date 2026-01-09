@@ -42,409 +42,131 @@ Usage Notes:
 
 ===============================================================================
 */
-------------------------------------------------------------
--- 1. Check for NULL customer_id
-------------------------------------------------------------
-SELECT COUNT(*) AS null_customer_id
-FROM silver.olist_orders_dataset
-WHERE customer_id IS NULL;
-------------------------------------------------------------
--- 2. Check customer_id format consistency (length patterns)
-------------------------------------------------------------
-SELECT 
-    LEN(customer_id) AS id_length,
-    COUNT(*) AS freq
-FROM silver.olist_orders_dataset
-GROUP BY LEN(customer_id)
-ORDER BY freq DESC;
-------------------------------------------------------------
--- 3. Check if customer_id exists in customers table
--- (foreign key consistency check)
-------------------------------------------------------------
-SELECT 
-    o.customer_id,
-    COUNT(*) AS order_count
-FROM silver.olist_orders_dataset o
-LEFT JOIN silver.olist_customers_dataset c
-    ON o.customer_id = c.customer_id
-WHERE c.customer_id IS NULL
-GROUP BY o.customer_id;
-------------------------------------------------------------
--- 4. Frequency distribution of orders per customer
-------------------------------------------------------------
-SELECT 
-    customer_id,
-    COUNT(*) AS order_count
-FROM silver.olist_orders_dataset
-GROUP BY customer_id
-ORDER BY order_count DESC;
-
-
-------------------------------------------------------------
--- 1. Check for NULL order_status
-------------------------------------------------------------
-SELECT COUNT(*) AS null_order_status
-FROM silver.olist_orders_dataset
-WHERE order_status IS NULL;
-------------------------------------------------------------
--- 2. List distinct order_status values
-------------------------------------------------------------
-SELECT DISTINCT order_status
-FROM silver.olist_orders_dataset
-ORDER BY order_status;
-------------------------------------------------------------
--- 3. Frequency distribution of each order_status
-------------------------------------------------------------
-SELECT 
-    order_status,
-    COUNT(*) AS freq
-FROM silver.olist_orders_dataset
-GROUP BY order_status
-ORDER BY freq DESC;
-------------------------------------------------------------
--- 4. Check for unusual or inconsistent status values
--- (e.g., typos or unexpected statuses)
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_status NOT IN (
-    'created', 'approved', 'invoiced', 'processing', 
-    'shipped', 'delivered', 'canceled', 'unavailable'
-);
-
-
-------------------------------------------------------------
--- 1. Check for NULL order_purchase_timestamp
-------------------------------------------------------------
-SELECT COUNT(*) AS null_order_purchase_timestamp
-FROM silver.olist_orders_dataset
-WHERE order_purchase_timestamp IS NULL;
-------------------------------------------------------------
--- 2. Check for invalid or future dates
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_purchase_timestamp > GETDATE();  -- future dates
-------------------------------------------------------------
--- 3. Get min and max order_purchase_timestamp
-------------------------------------------------------------
-SELECT 
-    MIN(order_purchase_timestamp) AS min_purchase_ts,
-    MAX(order_purchase_timestamp) AS max_purchase_ts
-FROM silver.olist_orders_dataset;
-------------------------------------------------------------
--- 4. Count orders per year/month for distribution
-------------------------------------------------------------
-SELECT 
-    YEAR(order_purchase_timestamp) AS order_year,
-    MONTH(order_purchase_timestamp) AS order_month,
-    COUNT(*) AS order_count
-FROM silver.olist_orders_dataset
-GROUP BY YEAR(order_purchase_timestamp), MONTH(order_purchase_timestamp)
-ORDER BY order_year, order_month;
-
-
-------------------------------------------------------------
--- 1. Check for NULL order_approved_at
--- Note: Orders can exist without approval yet, so NULLs are possible
-------------------------------------------------------------
-SELECT COUNT(*) AS null_order_approved
-FROM silver.olist_orders_dataset
-WHERE order_approved_at IS NULL;
-------------------------------------------------------------
--- 2. Check for order_approved_at before order_purchase_timestamp
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_approved_at < order_purchase_timestamp;
-------------------------------------------------------------
--- 3. Check for future order_approved_at
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_approved_at > GETDATE();
-------------------------------------------------------------
--- 4. Get min and max order_approved_at
-------------------------------------------------------------
-SELECT 
-    MIN(order_approved_at) AS min_approved_ts,
-    MAX(order_approved_at) AS max_approved_ts
-FROM silver.olist_orders_dataset;
-------------------------------------------------------------
--- 5. Distribution of approved orders per year/month
-------------------------------------------------------------
-SELECT 
-    YEAR(order_approved_at) AS approved_year,
-    MONTH(order_approved_at) AS approved_month,
-    COUNT(*) AS approved_count
-FROM silver.olist_orders_dataset
-GROUP BY YEAR(order_approved_at), MONTH(order_approved_at)
-ORDER BY approved_year, approved_month;
-
-
-------------------------------------------------------------
--- 1. Check for NULL order_delivered_carrier_date
--- Note: Some orders may still be in transit or canceled
-------------------------------------------------------------
-SELECT COUNT(*) AS null_delivered_carrier
-FROM silver.olist_orders_dataset
-WHERE order_delivered_carrier_date IS NULL;
-------------------------------------------------------------
--- 2. Check for delivery to carrier before order approval
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_carrier_date < order_approved_at;
-------------------------------------------------------------
--- 3. Check for delivery to carrier before purchase
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_carrier_date < order_purchase_timestamp;
-------------------------------------------------------------
--- 4. Check for future delivery to carrier date
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_carrier_date > GETDATE();
-------------------------------------------------------------
--- 5. Get min and max delivery to carrier date
-------------------------------------------------------------
-SELECT 
-    MIN(order_delivered_carrier_date) AS min_carrier_ts,
-    MAX(order_delivered_carrier_date) AS max_carrier_ts
-FROM silver.olist_orders_dataset;
-------------------------------------------------------------
--- 6. Distribution of deliveries to carrier per year/month
-------------------------------------------------------------
-SELECT 
-    YEAR(order_delivered_carrier_date) AS carrier_year,
-    MONTH(order_delivered_carrier_date) AS carrier_month,
-    COUNT(*) AS delivery_count
-FROM silver.olist_orders_dataset
-GROUP BY YEAR(order_delivered_carrier_date), MONTH(order_delivered_carrier_date)
-ORDER BY carrier_year, carrier_month;
-
-
-------------------------------------------------------------
--- 1. Check for NULL order_delivered_customer_date
--- Note: Orders may not have been delivered yet
-------------------------------------------------------------
-SELECT COUNT(*) AS null_delivered_customer
-FROM silver.olist_orders_dataset
-WHERE order_delivered_customer_date IS NULL;
-------------------------------------------------------------
--- 2. Check for delivery to customer before delivery to carrier
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_customer_date < order_delivered_carrier_date;
-------------------------------------------------------------
--- 3. Check for delivery to customer before purchase
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_customer_date < order_purchase_timestamp;
-------------------------------------------------------------
--- 3. Check for delivery to customer before carrier
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_customer_date < order_delivered_carrier_date;
-------------------------------------------------------------
--- 4. Check for future delivery to customer date
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_delivered_customer_date > GETDATE();
-------------------------------------------------------------
--- 5. Get min and max delivery to customer date
-------------------------------------------------------------
-SELECT 
-    MIN(order_delivered_customer_date) AS min_customer_ts,
-    MAX(order_delivered_customer_date) AS max_customer_ts
-FROM silver.olist_orders_dataset;
-------------------------------------------------------------
--- 6. Distribution of deliveries to customer per year/month
-------------------------------------------------------------
-SELECT 
-    YEAR(order_delivered_customer_date) AS customer_year,
-    MONTH(order_delivered_customer_date) AS customer_month,
-    COUNT(*) AS delivery_count
-FROM silver.olist_orders_dataset
-GROUP BY YEAR(order_delivered_customer_date), MONTH(order_delivered_customer_date)
-ORDER BY customer_year, customer_month;
-
-
-------------------------------------------------------------
--- 1. Check for NULL estimated delivery dates
-------------------------------------------------------------
-SELECT COUNT(*) AS null_estimated_delivery
-FROM silver.olist_orders_dataset
-WHERE order_estimated_delivery_date IS NULL;
-------------------------------------------------------------
--- 2. Check for estimated delivery before purchase
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_estimated_delivery_date < order_purchase_timestamp;
-------------------------------------------------------------
--- 3. Check for estimated delivery before order approval
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_estimated_delivery_date < order_approved_at;
-------------------------------------------------------------
--- 4. Check for future estimated delivery dates
-------------------------------------------------------------
-SELECT *
-FROM silver.olist_orders_dataset
-WHERE order_estimated_delivery_date > GETDATE();
-------------------------------------------------------------
--- 5. Min and max estimated delivery dates
-------------------------------------------------------------
-SELECT 
-    MIN(order_estimated_delivery_date) AS min_estimated_ts,
-    MAX(order_estimated_delivery_date) AS max_estimated_ts
-FROM silver.olist_orders_dataset;
-------------------------------------------------------------
--- 6. Distribution of estimated deliveries per year/month
-------------------------------------------------------------
-SELECT 
-    YEAR(order_estimated_delivery_date) AS est_year,
-    MONTH(order_estimated_delivery_date) AS est_month,
-    COUNT(*) AS est_count
-FROM silver.olist_orders_dataset
-GROUP BY YEAR(order_estimated_delivery_date), MONTH(order_estimated_delivery_date)
-ORDER BY est_year, est_month;
-
-
-
 -- QC 1: Check if customer_id contains NULL values
 SELECT 
     COUNT(*) AS null_customer_id_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_id IS NULL;
 -- QC 2: Check for empty or whitespace-only customer_id values
 SELECT 
     COUNT(*) AS empty_customer_id_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LTRIM(RTRIM(customer_id)) = '';
 -- QC 3: Check for duplicated customer_id values
 SELECT 
     customer_id,
     COUNT(*) AS occurrences
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_id
 HAVING COUNT(*) > 1;
 -- QC 4: Check customer_id values that do not follow expected UUID-like format (32 hex chars)
 SELECT 
     customer_id
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LEN(customer_id) <> 32
    OR customer_id LIKE '%[^0-9A-Fa-f]%';
 -- QC 5: Compare total rows to distinct customer_id count
 SELECT
-    (SELECT COUNT(*) FROM silver.olist_customers_dataset) AS total_rows,
-    (SELECT COUNT(DISTINCT customer_id) FROM silver.olist_customers_dataset) AS distinct_customer_ids;
+    (SELECT COUNT(*) FROM bronze.olist_customers_dataset) AS total_rows,
+    (SELECT COUNT(DISTINCT customer_id) FROM bronze.olist_customers_dataset) AS distinct_customer_ids;
 
 -- QC 1: Check if customer_unique_id contains NULL values
 SELECT 
     COUNT(*) AS null_customer_unique_id_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_unique_id IS NULL;
 -- QC 2: Check for empty or whitespace-only customer_unique_id values
 SELECT 
     COUNT(*) AS empty_customer_unique_id_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LTRIM(RTRIM(customer_unique_id)) = '';
 -- QC 3: Identify customer_unique_id values with invalid length or invalid characters
 SELECT
     customer_unique_id
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LEN(customer_unique_id) <> 32
    OR customer_unique_id LIKE '%[^0-9A-Fa-f]%';
 -- QC 4: Check how many customer_unique_id values appear more than once
 SELECT 
     customer_unique_id,
     COUNT(*) AS occurrences
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_unique_id
 HAVING COUNT(*) > 1;
 -- QC 5: Compare total_rows vs distinct customer_unique_id count
 SELECT
-    (SELECT COUNT(*) FROM silver.olist_customers_dataset) AS total_rows,
-    (SELECT COUNT(DISTINCT customer_unique_id) FROM silver.olist_customers_dataset) AS distinct_customer_unique_ids;
+    (SELECT COUNT(*) FROM bronze.olist_customers_dataset) AS total_rows,
+    (SELECT COUNT(DISTINCT customer_unique_id) FROM bronze.olist_customers_dataset) AS distinct_customer_unique_ids;
 -- QC 6: Verify customer_unique_id links to multiple customer_id values (check if unexpected)
 SELECT
     customer_unique_id,
     COUNT(DISTINCT customer_id) AS distinct_customer_ids
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_unique_id
 HAVING COUNT(DISTINCT customer_id) > 1;
 -- QC 1: Check if customer_zip_code_prefix contains NULL values
 SELECT 
     COUNT(*) AS null_zip_prefix_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_zip_code_prefix IS NULL;
 -- QC 2: Identify non-numeric ZIP prefixes
 SELECT
     customer_zip_code_prefix
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_zip_code_prefix NOT LIKE '%[0-9]%'
    OR TRY_CAST(customer_zip_code_prefix AS INT) IS NULL;
 -- QC 3: Identify ZIP prefixes with invalid length
 SELECT
     customer_zip_code_prefix,
     LEN(customer_zip_code_prefix) AS prefix_length
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LEN(customer_zip_code_prefix) <> 5;
 -- QC 4: Detect ZIP prefixes with fewer than 5 digits (possible missing leading zero)
 SELECT
     customer_zip_code_prefix
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LEN(customer_zip_code_prefix) < 5;
 -- QC 5: Identify the top/bottom ZIP prefixes by frequency
 SELECT
     customer_zip_code_prefix,
     COUNT(*) AS freq
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_zip_code_prefix
 ORDER BY freq ASC; -- Use DESC if you want most common first
 -- QC 6: Detect ZIP prefixes that map to multiple customer_state values
 SELECT
     customer_zip_code_prefix,
     COUNT(DISTINCT customer_state) AS distinct_states
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_zip_code_prefix
 HAVING COUNT(DISTINCT customer_state) > 1;
 -- QC 7: Detect ZIP prefixes that map to multiple customer_city values
 SELECT
     customer_zip_code_prefix,
     COUNT(DISTINCT customer_city) AS distinct_cities
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_zip_code_prefix
 HAVING COUNT(DISTINCT customer_city) > 1;
 -- QC 1: Check if customer_city contains NULL values
 SELECT 
     COUNT(*) AS null_city_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_city IS NULL;
 -- QC 2: Identify blank or whitespace-only values
 SELECT 
     COUNT(*) AS blank_city_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LTRIM(RTRIM(customer_city)) = '';
 ------------------------------------------------------------
 -- QC: customer_city – non-alphabetic characters check
 ------------------------------------------------------------
 SELECT *
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_city LIKE '%[^a-zA-ZÀ-ÿ ]%';
 -- QC 6: Very short city values (likely dirty)
 SELECT
     customer_city
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LEN(LTRIM(RTRIM(customer_city))) < 3;
 -- QC 7: Identify casing inconsistencies
 SELECT 
@@ -454,38 +176,38 @@ SELECT
         WHEN customer_city = LOWER(customer_city) THEN 'lowercase'
         ELSE 'Mixed Case'
     END AS casing_type
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_city;
 -- QC 8: Detect cities mapped to >1 state
 SELECT
     customer_city,
     COUNT(DISTINCT customer_state) AS distinct_states
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_city
 HAVING COUNT(DISTINCT customer_state) > 1;
 -- QC 9: Frequency distribution of cities
 SELECT
     customer_city,
     COUNT(*) AS freq
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_city
 ORDER BY freq ASC;   -- ASC to see rare/dirty cities first
 
 -- QC 1: Check if customer_state contains NULL values
 SELECT 
     COUNT(*) AS null_state_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_state IS NULL;
 -- QC 2: Identify blank or whitespace-only values
 SELECT 
     COUNT(*) AS blank_state_count
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LTRIM(RTRIM(customer_state)) = '';
 -- QC 3: Detect invalid length state codes
 SELECT 
     customer_state,
     COUNT(*) AS freq
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE LEN(LTRIM(RTRIM(customer_state))) <> 2
 GROUP BY customer_state;
 -- QC 4: Identify inconsistent casing
@@ -496,17 +218,17 @@ SELECT
         WHEN customer_state = LOWER(customer_state) THEN 'lowercase'
         ELSE 'Mixed Case'
     END AS casing_type
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_state;
 -- QC 5: Detect states containing non-letter characters
 SELECT
     customer_state
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE customer_state LIKE '%[^A-Za-z]%';
 -- QC 6: Detect state codes not in the Brazil list
 SELECT DISTINCT
     customer_state
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 WHERE UPPER(TRIM(customer_state)) NOT IN (
     'AC','AL','AP','AM','BA','CE','DF','ES','GO',
     'MA','MT','MS','MG','PA','PB','PR','PE','PI',
@@ -516,17 +238,16 @@ WHERE UPPER(TRIM(customer_state)) NOT IN (
 SELECT
     customer_state,
     COUNT(DISTINCT customer_zip_code_prefix) AS distinct_zips
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_state
 ORDER BY distinct_zips DESC;
 -- QC 8: Frequency distribution for validation
 SELECT
     customer_state,
     COUNT(*) AS freq
-FROM silver.olist_customers_dataset
+FROM bronze.olist_customers_dataset
 GROUP BY customer_state
 ORDER BY freq ASC;
-
 
 ------------------------------------------------------------
 -- QC: seller_id – NULL check
@@ -909,23 +630,24 @@ WHERE product_width_cm = 0;
 SELECT product_id, product_width_cm
 FROM bronze.olist_products_dataset
 WHERE product_width_cm > 500;
-------------------------------------------------------------
--- 1. Check for NULL order_id
-------------------------------------------------------------
-SELECT COUNT(*) AS null_order_id
-FROM bronze.olist_orders_dataset
-WHERE order_id IS NULL;
-------------------------------------------------------------
--- 2. Check for duplicate order_id
-------------------------------------------------------------
+/* ============================================================================
+   QUALITY CHECKS — bronze.olist_orders_dataset
+   ============================================================================ */
+
+-- ============================================================
+-- 1. Primary Key: order_id
+-- ============================================================
+
+-- Check for NULL or duplicate order_id
+-- Expectation: No results
 SELECT 
     COUNT(*) AS total_rows,
+    COUNT(order_id) AS non_null_order_id,
     COUNT(DISTINCT order_id) AS distinct_order_id,
-    COUNT(*) - COUNT(DISTINCT order_id) AS duplicate_count
+    COUNT(*) - COUNT(DISTINCT order_id) AS duplicate_order_id
 FROM bronze.olist_orders_dataset;
-------------------------------------------------------------
--- 3. Inspect duplicate order_id if they exist
-------------------------------------------------------------
+
+-- Inspect duplicate order_id values (if any)
 SELECT 
     order_id,
     COUNT(*) AS occurrences
@@ -933,25 +655,25 @@ FROM bronze.olist_orders_dataset
 GROUP BY order_id
 HAVING COUNT(*) > 1
 ORDER BY occurrences DESC;
-------------------------------------------------------------
--- 1. Check for NULL customer_id
-------------------------------------------------------------
+
+-- ============================================================
+-- 2. Foreign Key & Cardinality: customer_id
+-- ============================================================
+
+-- Check for NULL customer_id
 SELECT COUNT(*) AS null_customer_id
 FROM bronze.olist_orders_dataset
 WHERE customer_id IS NULL;
-------------------------------------------------------------
--- 2. Check customer_id format consistency (length patterns)
-------------------------------------------------------------
+
+-- Check customer_id format consistency (length distribution)
 SELECT 
     LEN(customer_id) AS id_length,
     COUNT(*) AS freq
 FROM bronze.olist_orders_dataset
 GROUP BY LEN(customer_id)
 ORDER BY freq DESC;
-------------------------------------------------------------
--- 3. Check if customer_id exists in customers table
--- (foreign key consistency check)
-------------------------------------------------------------
+
+-- Foreign key consistency: orders without matching customer
 SELECT 
     o.customer_id,
     COUNT(*) AS order_count
@@ -960,55 +682,141 @@ LEFT JOIN silver.olist_customers_dataset c
     ON o.customer_id = c.customer_id
 WHERE c.customer_id IS NULL
 GROUP BY o.customer_id;
-------------------------------------------------------------
--- 4. Frequency distribution of orders per customer
-------------------------------------------------------------
+
+-- Orders per customer (cardinality check)
 SELECT 
     customer_id,
     COUNT(*) AS order_count
 FROM bronze.olist_orders_dataset
 GROUP BY customer_id
-ORDER BY order_count DESC
-------------------------------------------------------------
--- 1. Check for NULL order_status
-------------------------------------------------------------
+ORDER BY order_count DESC;
+
+-- ============================================================
+-- 3. Order Status Validation
+-- ============================================================
+
+-- Check for NULL order_status
 SELECT COUNT(*) AS null_order_status
 FROM bronze.olist_orders_dataset
 WHERE order_status IS NULL;
-------------------------------------------------------------
--- 2. List distinct order_status values
-------------------------------------------------------------
-SELECT DISTINCT order_status
-FROM bronze.olist_orders_dataset
-ORDER BY order_status;
-------------------------------------------------------------
--- 3. Frequency distribution of each order_status
-------------------------------------------------------------
+
+-- Status domain & frequency
 SELECT 
     order_status,
     COUNT(*) AS freq
 FROM bronze.olist_orders_dataset
 GROUP BY order_status
 ORDER BY freq DESC;
-------------------------------------------------------------
--- 4. Check for unusual or inconsistent status values
--- (e.g., typos or unexpected statuses)
-------------------------------------------------------------
+
+-- Unexpected / invalid order_status values
 SELECT *
 FROM bronze.olist_orders_dataset
 WHERE order_status NOT IN (
-    'created', 'approved', 'invoiced', 'processing', 
+    'created', 'approved', 'invoiced', 'processing',
     'shipped', 'delivered', 'canceled', 'unavailable'
 );
-------------------------------------------------------------
--- 1. Check for NULL order_purchase_timestamp
-------------------------------------------------------------
-SELECT COUNT(*) AS null_order_purchase_timestamp
-FROM bronze.olist_orders_dataset
-WHERE order_purchase_timestamp IS NULL;
-------------------------------------------------------------
--- 2. Check for invalid or future dates
-------------------------------------------------------------
+
+-- ============================================================
+-- 4. Purchase Timestamp Validation
+-- ============================================================
+
+-- Check for NULL or future purchase timestamps
 SELECT *
 FROM bronze.olist_orders_dataset
-WHERE order_purchase_timestamp > GETDATE();  -- future dates
+WHERE order_purchase_timestamp IS NULL
+   OR order_purchase_timestamp > GETDATE();
+
+-- Purchase timestamp range
+SELECT 
+    MIN(order_purchase_timestamp) AS min_purchase_ts,
+    MAX(order_purchase_timestamp) AS max_purchase_ts
+FROM bronze.olist_orders_dataset;
+
+-- Purchase distribution by year/month
+SELECT 
+    YEAR(order_purchase_timestamp) AS order_year,
+    MONTH(order_purchase_timestamp) AS order_month,
+    COUNT(*) AS order_count
+FROM bronze.olist_orders_dataset
+GROUP BY YEAR(order_purchase_timestamp), MONTH(order_purchase_timestamp)
+ORDER BY order_year, order_month;
+
+-- ============================================================
+-- 5. Order Approval Timestamp
+-- ============================================================
+
+-- Logical inconsistencies or future approvals
+SELECT *
+FROM bronze.olist_orders_dataset
+WHERE order_approved_at IS NOT NULL
+  AND (
+        order_approved_at < order_purchase_timestamp
+     OR order_approved_at > GETDATE()
+  );
+
+-- Approval timestamp range
+SELECT 
+    MIN(order_approved_at) AS min_approved_ts,
+    MAX(order_approved_at) AS max_approved_ts
+FROM bronze.olist_orders_dataset;
+
+-- ============================================================
+-- 6. Delivery to Carrier Timestamp
+-- ============================================================
+
+-- Invalid carrier delivery sequencing
+SELECT *
+FROM bronze.olist_orders_dataset
+WHERE order_delivered_carrier_date IS NOT NULL
+  AND (
+        order_delivered_carrier_date < order_purchase_timestamp
+     OR order_delivered_carrier_date < order_approved_at
+     OR order_delivered_carrier_date > GETDATE()
+  );
+
+-- Carrier delivery range
+SELECT 
+    MIN(order_delivered_carrier_date) AS min_carrier_ts,
+    MAX(order_delivered_carrier_date) AS max_carrier_ts
+FROM bronze.olist_orders_dataset;
+
+-- ============================================================
+-- 7. Delivery to Customer Timestamp
+-- ============================================================
+
+-- Invalid customer delivery sequencing
+SELECT *
+FROM bronze.olist_orders_dataset
+WHERE order_delivered_customer_date IS NOT NULL
+  AND (
+        order_delivered_customer_date < order_delivered_carrier_date
+     OR order_delivered_customer_date < order_purchase_timestamp
+     OR order_delivered_customer_date > GETDATE()
+  );
+
+-- Customer delivery range
+SELECT 
+    MIN(order_delivered_customer_date) AS min_customer_ts,
+    MAX(order_delivered_customer_date) AS max_customer_ts
+FROM bronze.olist_orders_dataset;
+
+-- ============================================================
+-- 8. Estimated Delivery Date
+-- ============================================================
+
+-- Invalid estimated delivery logic
+SELECT *
+FROM bronze.olist_orders_dataset
+WHERE order_estimated_delivery_date IS NOT NULL
+  AND (
+        order_estimated_delivery_date < order_purchase_timestamp
+     OR order_estimated_delivery_date < order_approved_at
+     OR order_estimated_delivery_date > GETDATE()
+  );
+
+-- Estimated delivery range
+SELECT 
+    MIN(order_estimated_delivery_date) AS min_estimated_ts,
+    MAX(order_estimated_delivery_date) AS max_estimated_ts
+FROM bronze.olist_orders_dataset;
+
