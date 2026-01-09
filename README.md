@@ -1,6 +1,22 @@
 # 📊 Olist E-Commerce Data Analytics Pipeline
 
-**End-to-End SQL Data Warehouse & Power BI Analytics Project**
+**End-to-End SQL & Power BI Analytics Project**
+
+---
+
+## ⚡Executive Summary
+
+This project demonstrates how I transform **raw e-commerce data into actionable business insights** using SQL, dimensional modeling, and Power BI.
+
+I designed a **multi-layer analytics pipeline (Bronze → Silver → Gold)**, built a **star-schema data model**, and developed **four interactive dashboards** answering real business questions around **revenue growth, product performance, customer behavior, and delivery efficiency**.
+
+The analysis reveals that:
+
+* A small number of product categories drive most revenue
+* Customer retention is a major growth opportunity
+* Freight costs and delivery delays materially affect profitability and customer experience
+
+This project reflects how a **Data Analyst operates in a real business environment**, turning data into insights that support **strategic and operational decisions**.
 
 ---
 
@@ -8,109 +24,63 @@
 
 * [Project Overview](#-project-overview)
 * [Architecture & Data Pipeline](#-architecture--data-pipeline)
-
-  * [Bronze Layer – Raw Ingestion](#-bronze-layer--raw-ingestion)
-  * [Silver Layer – Cleaning & Enrichment](#-silver-layer--cleaning--enrichment)
-  * [Gold Layer – Analytics & Modeling](#-gold-layer--analytics--modeling)
 * [Data Modeling](#-data-modeling)
 * [Analytics & Dashboards (Power BI)](#-analytics--dashboards-power-bi)
-
-  * [Dashboard 1 – Sales & Revenue Overview](#dashboard-1--sales--revenue-overview)
-  * [Dashboard 2 – Product & Revenue Performance](#dashboard-2--product--revenue-performance)
-  * [Dashboard 3 – Customer & Seller Behavior](#dashboard-3--customer--seller-behavior)
-  * [Dashboard 4 – Order & Delivery Performance](#dashboard-4--order--delivery-performance)
-* [DAX Measures & Business Logic](#-dax-measures--business-logic)
 * [Results & Key Insights](#-results--key-insights)
+* [Key Recommendations](#-key-recommendations)
+* [DAX Measures & Business Logic](#-dax-measures--business-logic)
 * [Exploratory & Analytical SQL](#-exploratory--analytical-sql)
 * [Business Questions Answered](#-business-questions-answered)
 * [Tools & Technologies](#-tools--technologies)
-* [Why This Project Stands Out](#-why-this-project-stands-out)
 * [Author](#-author)
 
 ---
 
 ## 🚀 Project Overview
 
-This project is a **production-style data analytics pipeline** built on the Brazilian **Olist e-commerce dataset**, designed to demonstrate how raw transactional data can be transformed into **business-ready insights** through structured data modeling, SQL transformations, and advanced Power BI analytics.
+This project analyzes the **Brazilian Olist e-commerce dataset** to uncover insights across **sales, products, customers, sellers, and delivery operations**.
 
-The solution follows a **modern analytics architecture**:
+It follows a **professional analytics workflow**:
 
-* Layered **Bronze → Silver → Gold** data warehouse design
-* Star-schema modeling for analytical performance
-* Robust **DAX measures** for business KPIs
-* Executive-ready **Power BI dashboards** for decision-making
+* Structured SQL transformations
+* Clean, well-modeled data
+* Business-focused KPIs
+* Clear, decision-ready dashboards
 
-This project mirrors how analytics is implemented in real organizations — from ingestion to insight.
+The goal is not just visualization, but **insight generation and decision support**.
 
 ---
 
 ## 🧱 Architecture & Data Pipeline
 
-### 🔹 Bronze Layer – Raw Ingestion
+### Overall Data Architecture
 
-**Path:** `sql/bronze/`
+![Data Architecture](docs/data_architecture.png)
 
-* Raw CSV files ingested directly into SQL Server
-* No transformations applied
-* Preserves data lineage, traceability, and auditability
+The solution follows a **Bronze → Silver → Gold** architecture to ensure data quality, scalability, and trust in reporting.
 
-📌 *Purpose:* Act as the immutable source of truth.
-
----
-
-### 🔹 Silver Layer – Cleaning & Enrichment
-
-**Paths:**
-
-* `sql/silver/ddl_silver_layer.sql`
-* `sql/silver/proc_silver_layer.sql`
-
-Key transformations:
-
-* Data type standardization
-* Null handling and deduplication
-* Timestamp normalization
-* Geographic enrichment (customers & sellers)
-* Referential integrity checks
-
-📌 *Purpose:* Produce clean, reliable, analysis-ready data.
-
----
-
-### 🔹 Gold Layer – Analytics & Modeling
-
-**Path:** `sql/gold/ddl_gold_layer.sql`
-
-* Business-focused fact and dimension tables
-* Optimized for Power BI consumption
-* Supports multiple fact tables without fact-to-fact relationships
-* Enables flexible time intelligence and cross-fact analysis
-
-📌 *Purpose:* Deliver trusted, high-performance analytical models.
+* **Bronze:** Raw ingestion (no transformations)
+* **Silver:** Cleaning, standardization, enrichment
+* **Gold:** Analytics-ready tables optimized for Power BI
 
 ---
 
 ## 🗂️ Data Modeling
 
-The project uses a **star schema design**, centered around multiple fact tables:
+### Star Schema Design
 
-* `fact_orders`
-* `fact_order_items`
-* `fact_payments`
-* Supporting dimensions (customers, sellers, products, date, geography)
+![Star Schema](docs/star_schema.png)
 
-Each fact table is modeled independently with shared dimensions, enabling:
+The model uses **fact and dimension tables** aligned with common business questions:
 
-* Accurate aggregation
-* Clear filter propagation
-* Scalable analytics design
+* Orders, items, payments (facts)
+* Customers, sellers, products, dates, geography (dimensions)
 
-📄 Diagram files:
+This structure enables:
 
-* `docs/star_schema.png`
-* `docs/data_architecture.png`
-* `docs/data_flow_diagram.png`
-* `docs/data_integration_model.png`
+* Accurate aggregations
+* Clear filtering
+* Fast analytical queries
 
 ---
 
@@ -118,61 +88,102 @@ Each fact table is modeled independently with shared dimensions, enabling:
 
 ### Dashboard 1 – Sales & Revenue Overview
 
-**File:** `powerbi/dashboards/01-sales-and-revenue-overview.png`
+![Sales & Revenue Overview](powerbi/dashboards/01-sales-and-revenue-overview.png)
 
-Focus:
+**Answers:**
 
-* Total Revenue, Orders, Customers, AOV
-* Revenue & order trends over time
-* Top product categories by revenue
-* Payment method analysis
-
-Audience: **Executives & commercial stakeholders**
+* How is revenue trending over time?
+* Which categories generate the most revenue?
+* How do customers pay?
 
 ---
 
 ### Dashboard 2 – Product & Revenue Performance
 
-**File:** `powerbi/dashboards/02-product-and-revenue-performance.png`
+![Product & Revenue Performance](powerbi/dashboards/02-product-and-revenue-performance.png)
 
-Focus:
+**Answers:**
 
-* Product and category performance
-* Revenue and item contribution analysis
-* Freight cost efficiency
-* Dynamic Top-N category analysis
-
-Audience: **Merchandising & product teams**
+* Which products and categories drive performance?
+* How do freight costs affect revenue?
+* Where does volume not translate into value?
 
 ---
 
 ### Dashboard 3 – Customer & Seller Behavior
 
-**File:** `powerbi/dashboards/03-olist-customer-and-seller-behavior.png`
+![Customer & Seller Behavior](powerbi/dashboards/03-olist-customer-and-seller-behavior.png)
 
-Focus:
+**Answers:**
 
-* One-time vs repeat customers
-* Order frequency segmentation
-* Revenue per customer
-* Seller activity and participation
-
-Audience: **Growth, retention & marketplace teams**
+* How many customers are repeat buyers?
+* What is the revenue per customer?
+* How active are sellers on the platform?
 
 ---
 
 ### Dashboard 4 – Order & Delivery Performance
 
-**File:** `powerbi/dashboards/04-olist-order-and-delivery-performance.png`
+![Order & Delivery Performance](powerbi/dashboards/04-olist-order-and-delivery-performance.png)
 
-Focus:
+**Answers:**
 
-* Delivery timeliness
-* Fulfillment and cancellation rates
-* Shipping cost efficiency
-* Operational performance KPIs
+* How efficient is order fulfillment?
+* How often are deliveries late?
+* What is the average shipping cost per order?
 
-Audience: **Operations & logistics teams**
+---
+
+## 📊 Results & Key Insights
+
+### 📈 Revenue & Sales
+
+* Revenue is **highly concentrated in a small number of product categories**, indicating dependency risk.
+* Month-over-month trends reveal **seasonality**, useful for campaign planning.
+* Large AOV differences across categories suggest **pricing and bundling opportunities**.
+
+### 📦 Product & Freight Performance
+
+* Freight costs significantly erode margins for **low-priced, high-volume products**.
+* Heavier and bulkier products produce **lower revenue per kilogram**, highlighting logistics inefficiencies.
+
+### 👥 Customer Behavior
+
+* The majority of customers are **one-time buyers**, limiting long-term growth.
+* Repeat customers generate **much higher revenue per customer**, making retention critical.
+
+### 🚚 Delivery & Operations
+
+* While most orders are delivered, **late deliveries remain a consistent issue**.
+* Delivery performance varies by region, suggesting **geographic bottlenecks**.
+
+---
+
+## 🧭 Key Recommendations
+
+*(This section is intentionally written the way a Data Analyst would present findings to stakeholders.)*
+
+1. **Invest in Customer Retention**
+
+   * Introduce loyalty programs and targeted re-engagement for one-time buyers
+   * Focus marketing spend on converting high-value repeat customers
+
+2. **Optimize Product & Category Strategy**
+
+   * Reduce reliance on a few top categories by nurturing mid-tier performers
+   * Bundle low-margin products with higher-margin items to improve AOV
+
+3. **Review Freight & Logistics Costs**
+
+   * Reassess pricing for heavy or bulky products
+   * Explore regional fulfillment strategies to reduce late deliveries
+
+4. **Use On-Time Delivery as a Performance KPI**
+
+   * Track on-time delivery rate by region and seller
+   * Prioritize operational improvements where customer experience is most impacted
+
+📌 These recommendations are **directly supported by the dashboards and metrics** in this project.
 
 ---
 
@@ -180,53 +191,17 @@ Audience: **Operations & logistics teams**
 
 **Path:** `powerbi/dax_measures/`
 
-Measures are modular, reusable, and grouped by analytical domain:
+Measures are designed to be:
 
-* Core Metrics
-* Sales & Revenue
-* Product Performance
-* Customer & Seller Behavior
-* Order & Delivery Performance
-* Time Intelligence
+* Reusable across dashboards
+* Context-aware
+* Aligned with business KPIs
 
-Advanced techniques used:
+Includes:
 
-* `TREATAS` for cross-fact filtering
-* Dynamic Top-N logic
-* Context-aware measures for multi-dashboard reuse
-
----
-
-## 📊 Results & Key Insights
-
-This project delivers **actionable business insights**, not just visuals.
-
-### 📈 Revenue & Sales
-
-* Revenue growth is **driven by a small subset of product categories**, confirming a classic Pareto (80/20) distribution.
-* Month-over-month analysis highlights **seasonal demand patterns**, useful for inventory and campaign planning.
-* Average Order Value (AOV) varies significantly by category, indicating opportunities for **bundling and upsell strategies**.
-
-### 📦 Product & Freight Performance
-
-* Freight costs materially impact profitability for **low-priced, high-volume products**.
-* Categories with **higher weight and volume** generate lower revenue per kg, signaling potential pricing or logistics optimization opportunities.
-* Dynamic Top-N analysis helps isolate **true revenue drivers** without noise.
-
-### 👥 Customer Behavior
-
-* A **large majority of customers are one-time buyers**, highlighting retention as a key growth lever.
-* Repeat customers generate **disproportionately higher revenue per customer**, justifying targeted loyalty strategies.
-* Order frequency segmentation enables more precise customer targeting.
-
-### 🚚 Operations & Delivery
-
-* While most orders are delivered successfully, a **non-trivial portion arrive late**, impacting customer experience.
-* On-time delivery rate varies by region, pointing to **logistics bottlenecks**.
-* Shipping cost per order provides a clear KPI for **fulfillment efficiency monitoring**.
-
-📌 *Overall insight:*
-The analysis reveals that **growth, profitability, and customer experience are tightly linked**, and improvements require coordinated action across product, logistics, and retention strategies.
+* Revenue, AOV, MoM growth
+* Customer repeat rate
+* Delivery performance metrics
 
 ---
 
@@ -237,12 +212,11 @@ The analysis reveals that **growth, profitability, and customer experience are t
 * `sql/01_EDA`
 * `sql/02_analytics`
 
-Includes:
+Used to:
 
-* Data quality validation
-* Distribution and outlier analysis
-* Business question exploration
-* Metric sanity checks before BI modeling
+* Validate data quality
+* Explore distributions and outliers
+* Confirm business assumptions before dashboarding
 
 ---
 
@@ -255,41 +229,26 @@ Documented in:
 Examples:
 
 * What drives revenue growth?
-* Which products and categories contribute most?
-* How efficient is order fulfillment?
-* What proportion of customers are repeat buyers?
-* Where are logistics bottlenecks occurring?
+* Which customers are most valuable?
+* Where are operational inefficiencies occurring?
+* How does logistics impact customer experience?
 
 ---
 
 ## 🛠️ Tools & Technologies
 
-* **SQL Server** – Data warehousing & transformations
-* **Power BI** – Visualization & analytics
-* **DAX** – Advanced business metrics
-* **Star Schema Modeling**
-* **Git & GitHub** – Version control & documentation
-
----
-
-## 🌟 Why This Project Stands Out
-
-✅ End-to-end ownership (raw data → insights)
-✅ Production-style data warehouse design
-✅ Advanced DAX and cross-fact analytics
-✅ Business-driven dashboards, not vanity metrics
-✅ Clear documentation and professional structure
-
-This project reflects how **data analysts and analytics engineers operate in real-world environments**.
+* **SQL Server**
+* **Power BI**
+* **DAX**
+* **Dimensional Modeling**
+* **Git & GitHub**
 
 ---
 
 ## 📌 Author
 
 **Odoh Kenneth**
-Data Analyst | Analytics Engineer
-Focused on building **scalable, insight-driven data solutions**
+Data Analyst
+Turning data into **clear, actionable business insights**
 
 ---
-
-
