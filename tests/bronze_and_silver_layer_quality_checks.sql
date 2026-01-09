@@ -1,31 +1,40 @@
 /*
 ===============================================================================
-Script Name:     bronze_layer_quality_checks.sql
+Script Name:     bronze_and_silver_layer_quality_checks.sql
 ===============================================================================
 Purpose:
     This script performs comprehensive data quality validations on the 
-    Olist e-commerce datasets in the 'bronze' (staging) layer.
+    Olist e-commerce datasets across the Bronze (staging) and Silver 
+    (cleansed) layers.
 
-    The objective is to assess raw ingested data for structural integrity,
-    completeness, and basic business rule compliance before transformation
-    into the Silver layer.
+    The primary objective is to:
+      - Assess raw ingested data in the Bronze layer for structural integrity,
+        completeness, and basic business rule compliance.
+      - Re-validate the transformed and cleansed data in the Silver layer
+        to ensure that data quality issues identified in Bronze have been
+        properly resolved and that no new issues were introduced during
+        transformation.
 
-    These checks help identify data issues early in the pipeline and prevent
-    propagation of errors into downstream analytical layers.
+    The same set of quality checks is executed for both layers by changing
+    the target schema reference from `bronze` to `silver`.
 
-Target Schema:
-    bronze
+    These validations ensure data reliability and prevent the propagation
+    of data quality issues into downstream analytical and Gold-layer models.
+
+Target Schemas:
+    - bronze  (raw ingestion / staging layer)
+    - silver  (cleaned and conformed layer)
 
 Target Tables (Olist E-commerce Datasets):
-    - bronze.olist_geolocation_dataset
-    - bronze.olist_customers_dataset
-    - bronze.product_category_name_translation
-    - bronze.olist_products_dataset
-    - bronze.olist_sellers_dataset
-    - bronze.olist_orders_dataset
-    - bronze.olist_order_items_dataset
-    - bronze.olist_order_payments_dataset
-    - bronze.olist_order_reviews_dataset
+    - olist_geolocation_dataset
+    - olist_customers_dataset
+    - product_category_name_translation
+    - olist_products_dataset
+    - olist_sellers_dataset
+    - olist_orders_dataset
+    - olist_order_items_dataset
+    - olist_order_payments_dataset
+    - olist_order_reviews_dataset
 
 Quality Check Coverage:
     - NULL validation on critical business and technical columns
@@ -35,13 +44,18 @@ Quality Check Coverage:
     - Logical consistency checks for dates, quantities, and monetary values
 
 Usage Notes:
-    - Execute this script immediately after raw data ingestion.
-    - Any failing checks indicate data quality issues that must be addressed
-      prior to Silver layer cleansing and enrichment.
+    - Execute this script immediately after raw data ingestion for the
+      Bronze layer.
+    - Re-run the same script after transformations by switching the schema
+      reference to `silver` to validate cleaned data.
+    - Any failing checks in Bronze must be resolved before promotion to Silver.
+    - Any failing checks in Silver indicate transformation or cleansing issues
+      that must be corrected before loading the Gold layer.
     - Script is written and optimized for Microsoft SQL Server.
 
 ===============================================================================
 */
+
 -- ============================================================================
 -- Test for bronze.olist_geolocation_dataset
 -- ============================================================================
